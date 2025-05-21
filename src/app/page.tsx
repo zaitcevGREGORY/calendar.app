@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { format } from "date-fns"
 import { ru } from "date-fns/locale"
 import { CalendarWithHolidays, Holiday, UserDate } from "@/components/CalendarWithHolidays"
@@ -10,6 +11,7 @@ import { UserDateDetails } from "@/components/UserDateDetails"
 import { AddUserDateForm } from "@/components/AddUserDateForm"
 import { GreetingGenerator } from "@/components/GreetingGenerator"
 import { getRelativeDate, getDaysUntilString } from "@/lib/date-utils"
+import { Button } from "@/components/ui/button"
 
 // Временные данные для демонстрации
 const mockHolidays: Holiday[] = [
@@ -129,7 +131,17 @@ export default function Home() {
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Календарь праздников</h1>
-          <AddUserDateForm onAddUserDate={handleAddUserDate} />
+          <div className="flex items-center gap-4">
+            <Link href="/profile">
+              <Button variant="ghost" className="rounded-full h-10 w-10 p-0">
+                <span className="sr-only">Профиль</span>
+                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                  П
+                </div>
+              </Button>
+            </Link>
+            <AddUserDateForm onAddUserDate={handleAddUserDate} />
+          </div>
         </div>
       </header>
 
@@ -226,12 +238,20 @@ export default function Home() {
             )}
           </div>
 
-          <button
-            onClick={() => setShowGreetingGenerator(true)}
-            className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
-            Создать поздравление
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => setShowGreetingGenerator(true)}
+              className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+            >
+              Создать поздравление
+            </button>
+
+            <Link href="/postcards" className="block">
+              <Button variant="outline" className="w-full">
+                Просмотр открыток
+              </Button>
+            </Link>
+          </div>
         </div>
       </main>
 

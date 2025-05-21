@@ -1,12 +1,14 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { format } from "date-fns"
 import { ru } from "date-fns/locale"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { UserDate } from "@/components/CalendarWithHolidays"
 import { cn } from "@/lib/utils"
+import { Image } from "lucide-react"
 
 interface UserDateDetailsProps {
   userDate: UserDate
@@ -86,6 +88,11 @@ export function UserDateDetails({
           <Button variant="destructive" onClick={() => onDelete?.(userDate)}>
             Удалить
           </Button>
+          <Link href={`/postcards?userDateId=${userDate.id}`}>
+            <Button variant="outline" size="icon" title="Открытки">
+              <Image className="h-4 w-4" />
+            </Button>
+          </Link>
           <Button onClick={() => onShare?.(userDate)}>
             Поделиться
           </Button>

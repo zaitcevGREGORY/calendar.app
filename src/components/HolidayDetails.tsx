@@ -1,12 +1,14 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { format } from "date-fns"
 import { ru } from "date-fns/locale"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Holiday } from "@/components/CalendarWithHolidays"
 import { cn } from "@/lib/utils"
+import { Image } from "lucide-react"
 
 interface HolidayDetailsProps {
   holiday: Holiday
@@ -77,9 +79,16 @@ export function HolidayDetails({
         <Button variant="outline" onClick={onClose}>
           Закрыть
         </Button>
-        <Button onClick={() => onShare?.(holiday)}>
-          Поделиться
-        </Button>
+        <div className="flex gap-2">
+          <Link href={`/postcards?holidayId=${holiday.id}`}>
+            <Button variant="outline" size="icon" title="Открытки">
+              <Image className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Button onClick={() => onShare?.(holiday)}>
+            Поделиться
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   )
