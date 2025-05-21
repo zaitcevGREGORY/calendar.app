@@ -1,103 +1,244 @@
-import Image from "next/image";
+"use client"
+
+import * as React from "react"
+import Image from "next/image"
+import { format } from "date-fns"
+import { ru } from "date-fns/locale"
+import { CalendarWithHolidays, Holiday, UserDate } from "@/components/CalendarWithHolidays"
+import { HolidayDetails } from "@/components/HolidayDetails"
+import { UserDateDetails } from "@/components/UserDateDetails"
+import { AddUserDateForm } from "@/components/AddUserDateForm"
+import { GreetingGenerator } from "@/components/GreetingGenerator"
+import { getRelativeDate, getDaysUntilString } from "@/lib/date-utils"
+
+// Временные данные для демонстрации
+const mockHolidays: Holiday[] = [
+  {
+    id: "1",
+    date: new Date(2024, 0, 1),
+    name: "Новый год",
+    description: "Новый год — главный календарный праздник, наступающий в момент перехода с последнего дня текущего года в первый день следующего года.",
+    type: "national",
+  },
+  {
+    id: "2",
+    date: new Date(2024, 1, 23),
+    name: "День защитника Отечества",
+    description: "День защитника Отечества — праздник, отмечаемый 23 февраля в России, Белоруссии, Киргизии и Таджикистане.",
+    type: "national",
+  },
+  {
+    id: "3",
+    date: new Date(2024, 2, 8),
+    name: "Международный женский день",
+    description: "Международный женский день — праздник, который отмечается ежегодно 8 марта в ряде стран.",
+    type: "international",
+  },
+  {
+    id: "4",
+    date: new Date(2024, 3, 12),
+    name: "День космонавтики",
+    description: "День космонавтики — памятная дата, отмечаемая 12 апреля, установленная в ознаменование первого полёта человека в космос.",
+    type: "national",
+  },
+  {
+    id: "5",
+    date: new Date(2024, 4, 1),
+    name: "Праздник Весны и Труда",
+    description: "Праздник Весны и Труда — отмечается во многих странах мира 1 мая.",
+    type: "national",
+  },
+  {
+    id: "6",
+    date: new Date(2024, 4, 9),
+    name: "День Победы",
+    description: "День Победы — праздник победы Красной Армии и советского народа над нацистской Германией в Великой Отечественной войне 1941—1945 годов.",
+    type: "national",
+  },
+];
+
+const mockUserDates: UserDate[] = [
+  {
+    id: "1",
+    userId: "user1",
+    date: new Date(2024, 6, 15),
+    name: "День рождения Ивана",
+    description: "Не забыть купить подарок!",
+    type: "birthday",
+  },
+  {
+    id: "2",
+    userId: "user1",
+    date: new Date(2024, 8, 1),
+    name: "Годовщина свадьбы",
+    description: "5 лет вместе",
+    type: "anniversary",
+  },
+];
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [selectedHoliday, setSelectedHoliday] = React.useState<Holiday | null>(null)
+  const [selectedUserDate, setSelectedUserDate] = React.useState<UserDate | null>(null)
+  const [showGreetingGenerator, setShowGreetingGenerator] = React.useState(false)
+  const [userDates, setUserDates] = React.useState<UserDate[]>(mockUserDates)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  // Обработчик выбора праздника
+  const handleHolidaySelect = (holiday: Holiday) => {
+    setSelectedHoliday(holiday)
+    setSelectedUserDate(null)
+  }
+
+  // Обработчик выбора пользовательской даты
+  const handleUserDateSelect = (userDate: UserDate) => {
+    setSelectedUserDate(userDate)
+    setSelectedHoliday(null)
+  }
+
+  // Обработчик добавления пользовательской даты
+  const handleAddUserDate = (newUserDate: Omit<UserDate, "id" | "userId">) => {
+    const userDate: UserDate = {
+      ...newUserDate,
+      id: `user-date-${Date.now()}`,
+      userId: "user1", // В реальном приложении здесь будет ID текущего пользователя
+    }
+    setUserDates([...userDates, userDate])
+  }
+
+  // Обработчик удаления пользовательской даты
+  const handleDeleteUserDate = (userDate: UserDate) => {
+    setUserDates(userDates.filter(date => date.id !== userDate.id))
+    setSelectedUserDate(null)
+  }
+
+  // Обработчик для кнопки "Поделиться"
+  const handleShare = (item: Holiday | UserDate | string) => {
+    if (typeof item === "string") {
+      // Поделиться поздравлением
+      alert(`Поздравление скопировано в буфер обмена: ${item}`)
+    } else if ("type" in item && (item.type === "birthday" || item.type === "anniversary")) {
+      // Поделиться пользовательской датой
+      alert(`Поделиться пользовательской датой: ${item.name}`)
+    } else {
+      // Поделиться праздником
+      alert(`Поделиться праздником: ${item.name}`)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Календарь праздников</h1>
+          <AddUserDateForm onAddUserDate={handleAddUserDate} />
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8 grid grid-cols-1 md:grid-cols-[1fr_300px] gap-8">
+        {/* Левая колонка - Календарь */}
+        <div className="space-y-6">
+          <CalendarWithHolidays
+            holidays={mockHolidays}
+            userDates={userDates}
+            onHolidaySelect={handleHolidaySelect}
+            onUserDateSelect={handleUserDateSelect}
+            className="rounded-lg border shadow-sm"
+          />
+
+          {/* Детали праздника или пользовательской даты */}
+          {selectedHoliday && (
+            <HolidayDetails
+              holiday={selectedHoliday}
+              onClose={() => setSelectedHoliday(null)}
+              onShare={handleShare}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          )}
+
+          {selectedUserDate && (
+            <UserDateDetails
+              userDate={selectedUserDate}
+              onClose={() => setSelectedUserDate(null)}
+              onEdit={() => alert("Редактирование пользовательской даты")}
+              onDelete={handleDeleteUserDate}
+              onShare={handleShare}
+            />
+          )}
+
+          {/* Генератор поздравлений */}
+          {showGreetingGenerator && (
+            <GreetingGenerator
+              holiday={selectedHoliday || undefined}
+              userDate={selectedUserDate || undefined}
+              onClose={() => setShowGreetingGenerator(false)}
+              onShare={handleShare}
+            />
+          )}
+        </div>
+
+        {/* Правая колонка - Ближайшие праздники и важные даты */}
+        <div className="space-y-6">
+          <div className="rounded-lg border shadow-sm p-4">
+            <h2 className="text-xl font-semibold mb-4">Ближайшие праздники</h2>
+            <ul className="space-y-3">
+              {mockHolidays
+                .filter(holiday => holiday.date >= new Date())
+                .sort((a, b) => a.date.getTime() - b.date.getTime())
+                .slice(0, 5)
+                .map(holiday => (
+                  <li key={holiday.id} className="flex justify-between items-center">
+                    <button
+                      onClick={() => handleHolidaySelect(holiday)}
+                      className="text-left hover:underline"
+                    >
+                      {holiday.name}
+                    </button>
+                    <span className="text-sm text-muted-foreground">
+                      {getDaysUntilString(holiday.date)}
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+
+          <div className="rounded-lg border shadow-sm p-4">
+            <h2 className="text-xl font-semibold mb-4">Мои важные даты</h2>
+            {userDates.length > 0 ? (
+              <ul className="space-y-3">
+                {userDates
+                  .sort((a, b) => a.date.getTime() - b.date.getTime())
+                  .map(userDate => (
+                    <li key={userDate.id} className="flex justify-between items-center">
+                      <button
+                        onClick={() => handleUserDateSelect(userDate)}
+                        className="text-left hover:underline"
+                      >
+                        {userDate.name}
+                      </button>
+                      <span className="text-sm text-muted-foreground">
+                        {getDaysUntilString(userDate.date)}
+                      </span>
+                    </li>
+                  ))}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground">
+                У вас пока нет важных дат. Добавьте их, нажав на кнопку "Добавить важную дату".
+              </p>
+            )}
+          </div>
+
+          <button
+            onClick={() => setShowGreetingGenerator(true)}
+            className="w-full py-2 px-4 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
           >
-            Read our docs
-          </a>
+            Создать поздравление
+          </button>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className="border-t mt-8">
+        <div className="container mx-auto px-4 py-6 text-center text-muted-foreground">
+          <p>© 2024 Календарь праздников. Все права защищены.</p>
+        </div>
       </footer>
     </div>
-  );
-}
+  )
