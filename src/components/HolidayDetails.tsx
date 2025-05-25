@@ -12,6 +12,7 @@ interface HolidayDetailsProps {
   holiday: Holiday
   onClose?: () => void
   onShare?: (holiday: Holiday) => void
+  onViewPostcard?: (holiday: Holiday) => void
   className?: string
 }
 
@@ -19,6 +20,7 @@ export function HolidayDetails({
   holiday,
   onClose,
   onShare,
+  onViewPostcard,
   className,
 }: HolidayDetailsProps) {
   // Функция для получения цвета в зависимости от типа праздника
@@ -77,9 +79,14 @@ export function HolidayDetails({
         <Button variant="outline" onClick={onClose}>
           Закрыть
         </Button>
-        <Button onClick={() => onShare?.(holiday)}>
-          Поделиться
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => onViewPostcard?.(holiday)}>
+            Открытка
+          </Button>
+          <Button onClick={() => onShare?.(holiday)}>
+            Поделиться
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   )

@@ -27,16 +27,16 @@ export function AddUserDateForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!date || !name) return
-    
+
     onAddUserDate?.({
       date,
       name,
       description,
       type,
     })
-    
+
     // Сбрасываем форму
     setName("")
     setDescription("")

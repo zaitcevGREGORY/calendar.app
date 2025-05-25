@@ -72,12 +72,12 @@ export function CalendarWithHolidays({
   // Функция для отображения дополнительного контента в ячейке календаря
   const renderDayContent = (day: Date) => {
     const formattedDay = format(day, "yyyy-MM-dd")
-    
+
     // Находим праздники на текущий день
     const dayHolidays = holidays.filter(
       (holiday) => format(holiday.date, "yyyy-MM-dd") === formattedDay
     )
-    
+
     // Находим пользовательские даты на текущий день
     const dayUserDates = userDates.filter(
       (userDate) => format(userDate.date, "yyyy-MM-dd") === formattedDay
@@ -91,7 +91,7 @@ export function CalendarWithHolidays({
             <div className="size-1.5 rounded-full bg-primary" title={dayHolidays[0].name} />
           )}
           {dayUserDates.length > 0 && (
-            <div className="size-1.5 rounded-full bg-accent" title={dayUserDates[0].name} />
+            <div className="size-1.5 rounded-full bg-red-500" title={dayUserDates[0].name} />
           )}
         </div>
       )
@@ -108,18 +108,41 @@ export function CalendarWithHolidays({
         onSelect={handleSelect}
         locale={ru}
         modifiers={{
-          holiday: (date) => 
-            holidays.some(holiday => 
-              format(holiday.date, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
-            ),
-          userDate: (date) => 
-            userDates.some(userDate => 
-              format(userDate.date, "yyyy-MM-dd") === format(date, "yyyy-MM-dd")
+          holiday: (date) => {
+            const formattedDate = format(date, "yyyy-MM-dd")
+            const hasHoliday = holidays.some(holiday =>
+              format(holiday.date, "yyyy-MM-dd") === formattedDate
             )
+            const hasUserDate = userDates.some(userDate =>
+              format(userDate.date, "yyyy-MM-dd") === formattedDate
+            )
+            return hasHoliday && !hasUserDate // Только праздники
+          },
+          userDate: (date) => {
+            const formattedDate = format(date, "yyyy-MM-dd")
+            const hasHoliday = holidays.some(holiday =>
+              format(holiday.date, "yyyy-MM-dd") === formattedDate
+            )
+            const hasUserDate = userDates.some(userDate =>
+              format(userDate.date, "yyyy-MM-dd") === formattedDate
+            )
+            return hasUserDate && !hasHoliday // Только пользовательские даты
+          },
+          both: (date) => {
+            const formattedDate = format(date, "yyyy-MM-dd")
+            const hasHoliday = holidays.some(holiday =>
+              format(holiday.date, "yyyy-MM-dd") === formattedDate
+            )
+            const hasUserDate = userDates.some(userDate =>
+              format(userDate.date, "yyyy-MM-dd") === formattedDate
+            )
+            return hasHoliday && hasUserDate // И праздники, и пользовательские даты
+          }
         }}
         modifiersClassNames={{
-          holiday: "border-b-2 border-primary",
-          userDate: "border-b-2 border-accent"
+          holiday: "border-b-2 border-primary bg-primary/10",
+          userDate: "border-b-2 border-red-500 bg-red-50 text-red-700",
+          both: "border-b-2 border-red-500 bg-gradient-to-r from-red-50 to-primary/10 text-red-700 font-semibold"
         }}
         components={{
           DayContent: ({ date }) => (

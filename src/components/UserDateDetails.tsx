@@ -14,6 +14,7 @@ interface UserDateDetailsProps {
   onEdit?: (userDate: UserDate) => void
   onDelete?: (userDate: UserDate) => void
   onShare?: (userDate: UserDate) => void
+  onViewPostcard?: (userDate: UserDate) => void
   className?: string
 }
 
@@ -23,6 +24,7 @@ export function UserDateDetails({
   onEdit,
   onDelete,
   onShare,
+  onViewPostcard,
   className,
 }: UserDateDetailsProps) {
   // Функция для получения цвета в зависимости от типа даты
@@ -83,6 +85,9 @@ export function UserDateDetails({
           </Button>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => onViewPostcard?.(userDate)}>
+            Открытка
+          </Button>
           <Button variant="destructive" onClick={() => onDelete?.(userDate)}>
             Удалить
           </Button>
